@@ -1,11 +1,46 @@
-# 简化版 Dockerfile - 直接使用官方镜像
-FROM whyour/qinglong:latest
+FROM node:20-bullseye-slim AS build
 
-# 设置时区
-ENV TZ=Asia/Shanghai
+WORKDIR /app
 
-# 暴露端口
+RUN npm install -g pnpm@8.3.1
+
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --no-frozen-lockfile
+
+COPY . .
+RUN pnpm build:back && pnpm build:front
+
+FROM node:20-bullseye-slim
+
+WORKDIR /ql
+
+ENV NODE_ENV=production \
+    BACK_PORT=5700 \
+    QL_DIR=/ql \
+    QL_DATA_DIR=/ql/data
+
+RUN apt-get update && apt-get install -y python3 python3-pip git curl bash tzdata openssh-client procps jq && rm -rf /var/lib/apt/lists/*
+RUN npm install -g pm2 pnpm@8.3.1
+
+COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/.npmrc ./
+COPY --from=build /app/.env.example ./.env.example
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/back ./back
+COPY --from=build /app/src ./src
+COPY --from=build /app/static ./static
+COPY --from=build /app/sample ./sample
+COPY --from=build /app/shell ./shell
+COPY --from=build /app/docker ./docker
+COPY --from=build /app/version.yaml ./version.yaml
+COPY --from=build /app/.umirc.ts ./.umirc.ts
+COPY --from=build /app/typings.d.ts ./typings.d.ts
+
+RUN mkdir -p /ql/data/config /ql/data/scripts /ql/data/repo /ql/data/log /ql/data/db /ql/data/upload /ql/data/dep_cache /ql/data/syslog /ql/data/ssh.d /ql/.tmp
+RUN cp .env.example .env || true
+RUN chmod 777 /ql/shell/*.sh /ql/docker/*.sh || true
+
 EXPOSE 5700
 
-# 使用官方入口点
-ENTRYPOINT ["/docker-entrypoint.sh"]
+HEALTHCHECK --interval=10s --timeout=3s --retries=20 CMD curl -fsS http://127.0.0.1:${BACK_PORT}/api/health || exit 1
+
+ENTRYPOINT ["./docker/docker-entrypoint.sh"]
