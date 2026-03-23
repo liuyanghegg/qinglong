@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: qinglong-r2
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_PREFIX
+        value: qinglong
+      - key: BACKUP_PASSPHRASE
+        sync: false
+      - key: SYNC_INTERVAL
+        value: 60
