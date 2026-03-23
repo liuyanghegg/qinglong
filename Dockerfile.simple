@@ -1,0 +1,11 @@
+# 简化版 Dockerfile - 直接使用官方镜像
+FROM whyour/qinglong:latest
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+
+# 暴露端口
+EXPOSE 5700
+
+# 使用官方入口点
+ENTRYPOINT ["/docker-entrypoint.sh"]
