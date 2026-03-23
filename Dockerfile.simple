@@ -1,7 +1,26 @@
 FROM whyour/qinglong:latest
 
-ENV TZ=Asia/Shanghai
+USER root
+
+WORKDIR /ql
+
+RUN set -ex && \
+    if [ -f /etc/alpine-release ]; then \
+        apk update && apk add --no-cache postgresql-client; \
+    elif [ -f /etc/debian_version ]; then \
+        apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*; \
+    fi
+
+RUN cd /ql && npm install pg@8 --save 2>/dev/null || true
+
+RUN mkdir -p /ql/scripts/_system /ql/data/logs
+
+COPY sync.js /ql/scripts/_system/sync.js
+RUN chmod +x /ql/scripts/_system/sync.js
+
+COPY entrypoint.sh /docker-entrypoint-custom.sh
+RUN chmod +x /docker-entrypoint-custom.sh
 
 EXPOSE 5700
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint-custom.sh"]
