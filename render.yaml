@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: qinglong
+    env: docker
+    region: oregon
+    plan: free
+    autoDeploy: false
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: QL_PORT
+        value: "5700"
+      - key: QL_DIR
+        value: "/ql"
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Asia/Shanghai

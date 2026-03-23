@@ -1,0 +1,12 @@
+node_modules/
+*.log
+.git/
+deploy.js
+fix-deploy.js
+create-service.js
+trigger-deploy.js
+cancel-deploy.js
+check-status.js
+debug.js
+get-owner.js
+setup-service.js
