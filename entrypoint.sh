@@ -26,6 +26,14 @@ fi
 if [ -n "$SUPABASE_PASSWORD" ]; then
     (crontab -l 2>/dev/null || true; echo "*/5 * * * * cd $QL_DIR && node scripts/_system/sync.js backup >> $LOG 2>&1") | crontab -
     log "定时备份已设置"
+
+    # 首次启动后主动执行一次备份，尽快验证同步链路
+    (
+        sleep 90
+        cd "$QL_DIR"
+        node scripts/_system/sync.js backup >> "$LOG" 2>&1 || true
+    ) &
+    log "已安排首次启动备份"
 fi
 
 log "启动青龙面板..."
