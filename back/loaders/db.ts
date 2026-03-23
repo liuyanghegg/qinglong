@@ -7,6 +7,7 @@ import { SystemModel } from '../data/system';
 import { SubscriptionModel } from '../data/subscription';
 import { CrontabViewModel } from '../data/cronView';
 import { sequelize } from '../data';
+import { DataTypes } from 'sequelize';
 
 export default async () => {
   try {
@@ -18,35 +19,50 @@ export default async () => {
     await SubscriptionModel.sync();
     await CrontabViewModel.sync();
 
+    const queryInterface = sequelize.getQueryInterface();
+
     // 初始化新增字段
     const migrations = [
       {
         table: 'CrontabViews',
         column: 'filterRelation',
-        type: 'VARCHAR(255)',
+        type: DataTypes.STRING,
       },
-      { table: 'Subscriptions', column: 'proxy', type: 'VARCHAR(255)' },
-      { table: 'CrontabViews', column: 'type', type: 'NUMBER' },
-      { table: 'Subscriptions', column: 'autoAddCron', type: 'NUMBER' },
-      { table: 'Subscriptions', column: 'autoDelCron', type: 'NUMBER' },
-      { table: 'Crontabs', column: 'sub_id', type: 'NUMBER' },
-      { table: 'Crontabs', column: 'extra_schedules', type: 'JSON' },
-      { table: 'Crontabs', column: 'task_before', type: 'TEXT' },
-      { table: 'Crontabs', column: 'task_after', type: 'TEXT' },
-      { table: 'Crontabs', column: 'log_name', type: 'VARCHAR(255)' },
+      { table: 'Subscriptions', column: 'proxy', type: DataTypes.STRING },
+      { table: 'CrontabViews', column: 'type', type: DataTypes.INTEGER },
+      {
+        table: 'Subscriptions',
+        column: 'autoAddCron',
+        type: DataTypes.INTEGER,
+      },
+      {
+        table: 'Subscriptions',
+        column: 'autoDelCron',
+        type: DataTypes.INTEGER,
+      },
+      { table: 'Crontabs', column: 'sub_id', type: DataTypes.INTEGER },
+      { table: 'Crontabs', column: 'extra_schedules', type: DataTypes.JSON },
+      { table: 'Crontabs', column: 'task_before', type: DataTypes.TEXT },
+      { table: 'Crontabs', column: 'task_after', type: DataTypes.TEXT },
+      { table: 'Crontabs', column: 'log_name', type: DataTypes.STRING },
       {
         table: 'Crontabs',
         column: 'allow_multiple_instances',
-        type: 'NUMBER',
+        type: DataTypes.INTEGER,
       },
-      { table: 'Envs', column: 'isPinned', type: 'NUMBER' },
+      { table: 'Envs', column: 'isPinned', type: DataTypes.INTEGER },
     ];
 
     for (const migration of migrations) {
       try {
-        await sequelize.query(
-          `alter table ${migration.table} add column ${migration.column} ${migration.type}`,
-        );
+        const table = await queryInterface.describeTable(migration.table);
+
+        if (!table[migration.column]) {
+          await queryInterface.addColumn(migration.table, migration.column, {
+            type: migration.type,
+            allowNull: true,
+          });
+        }
       } catch (error) {
         // Column already exists or other error, continue
       }

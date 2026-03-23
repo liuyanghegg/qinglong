@@ -57,6 +57,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.0",
     "@grpc/proto-loader": "^0.8.0",
+    "@keyv/postgres": "^2.2.0",
     "@otplib/preset-default": "^12.0.1",
     "body-parser": "^1.20.3",
     "celebrate": "^15.0.3",
@@ -82,6 +83,8 @@
     "nodemailer": "^8.0.1",
     "p-queue-cjs": "7.3.4",
     "@bufbuild/protobuf": "^2.10.0",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
     "ps-tree": "^1.2.0",
     "reflect-metadata": "^0.2.2",
     "sequelize": "^6.37.5",
