@@ -16,7 +16,9 @@ RUN cd /ql && npm install pg@8 --save 2>/dev/null || true
 RUN mkdir -p /ql/scripts/_system /ql/data/logs
 
 COPY sync.js /ql/scripts/_system/sync.js
+COPY watch-sync.js /ql/scripts/_system/watch-sync.js
 RUN chmod +x /ql/scripts/_system/sync.js
+RUN chmod +x /ql/scripts/_system/watch-sync.js
 
 COPY entrypoint.sh /docker-entrypoint-custom.sh
 RUN chmod +x /docker-entrypoint-custom.sh

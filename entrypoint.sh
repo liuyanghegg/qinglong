@@ -22,18 +22,11 @@ if [ -n "$SUPABASE_PASSWORD" ] && [ -f "$QL_DIR/scripts/_system/sync.js" ]; then
     timeout 60 node scripts/_system/sync.js restore 2>&1 | tee -a "$LOG" || log "恢复失败，继续启动"
 fi
 
-# 设置定时备份 (每5分钟)
-if [ -n "$SUPABASE_PASSWORD" ]; then
-    (crontab -l 2>/dev/null || true; echo "*/5 * * * * cd $QL_DIR && node scripts/_system/sync.js backup >> $LOG 2>&1") | crontab -
-    log "定时备份已设置"
-
-    # 首次启动后主动执行一次备份，尽快验证同步链路
-    (
-        sleep 90
-        cd "$QL_DIR"
-        node scripts/_system/sync.js backup >> "$LOG" 2>&1 || true
-    ) &
-    log "已安排首次启动备份"
+# 启动保存后同步监听器
+if [ -n "$SUPABASE_PASSWORD" ] && [ -f "$QL_DIR/scripts/_system/watch-sync.js" ]; then
+    cd "$QL_DIR"
+    nohup node scripts/_system/watch-sync.js >> "$LOG" 2>&1 &
+    log "保存后同步监听器已启动"
 fi
 
 log "启动青龙面板..."
