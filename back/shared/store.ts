@@ -2,7 +2,6 @@ import { AuthInfo } from '../data/system';
 import { App } from '../data/open';
 import Keyv from 'keyv';
 import KeyvSqlite from '@keyv/sqlite';
-import KeyvPostgres from '@keyv/postgres';
 import config from '../config';
 import path from 'path';
 
@@ -16,26 +15,20 @@ export interface IKeyvStore {
   authInfo: AuthInfo;
 }
 
-const databaseUrl = process.env.DATABASE_URL;
-const keyvStoreBackend = databaseUrl
-  ? new KeyvPostgres(databaseUrl, {
-      table: 'keyv_store',
-    })
-  : new KeyvSqlite(path.join(config.dbPath, 'keyv.sqlite'));
-
-export const keyvStore = new Keyv({ store: keyvStoreBackend });
+const keyvSqlite = new KeyvSqlite(path.join(config.dbPath, 'keyv.sqlite'));
+export const keyvStore = new Keyv<IKeyvStore>({ store: keyvSqlite });
 
 export const shareStore = {
   getAuthInfo() {
-    return keyvStore.get(EKeyv.authInfo) as Promise<IKeyvStore['authInfo']>;
+    return keyvStore.get<IKeyvStore['authInfo']>(EKeyv.authInfo);
   },
   updateAuthInfo(value: IKeyvStore['authInfo']) {
-    return keyvStore.set(EKeyv.authInfo, value);
+    return keyvStore.set<IKeyvStore['authInfo']>(EKeyv.authInfo, value);
   },
   getApps() {
-    return keyvStore.get(EKeyv.apps) as Promise<IKeyvStore['apps']>;
+    return keyvStore.get<IKeyvStore['apps']>(EKeyv.apps);
   },
   updateApps(apps: App[]) {
-    return keyvStore.set(EKeyv.apps, apps);
+    return keyvStore.set<IKeyvStore['apps']>(EKeyv.apps, apps);
   },
 };
